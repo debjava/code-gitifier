@@ -1,0 +1,64 @@
+plugins {
+    id("java")
+//    id("org.jetbrains.kotlin.jvm") version "2.1.20"
+    id("org.jetbrains.intellij.platform") version "2.10.5"
+}
+
+group = "com.ddlab.rnd"
+version = "1.0.0"
+
+repositories {
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+// Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
+dependencies {
+    compileOnly('org.projectlombok:lombok:1.18.32')
+    annotationProcessor('org.projectlombok:lombok:1.18.32')
+    implementation ('org.slf4j:slf4j-api:2.0.17')
+    implementation 'ch.qos.logback:logback-classic:1.5.21'
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.6")
+
+    implementation("tools.jackson.core:jackson-core:3.0.3")
+    implementation("tools.jackson.core:jackson-databind:3.0.3")
+    intellijPlatform {
+        intellijIdea("2025.2.4")
+//        testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
+    }
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = "231"
+        }
+
+        changeNotes = '''
+            Initial version
+        '''
+    }
+}
+
+//tasks {
+//    // Set the JVM compatibility versions
+//    withType<JavaCompile> {
+//        sourceCompatibility = "17"
+//        targetCompatibility = "17"
+//    }
+//}
+
+//kotlin {
+//    compilerOptions {
+//        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+//    }
+//}
+
+tasks.withType(JavaCompile) {
+    // Set the JVM compatibility versions
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}

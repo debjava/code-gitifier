@@ -1,0 +1,62 @@
+<!-- Plugin Configuration File: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN, cannot be changed between the plugin versions. -->
+    <id>com.ddlab.rnd.code-gitifier</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+    <name>code-gitifier</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+    <description><![CDATA[
+        Enter short description for your plugin here.<br>
+        <em>most HTML tags may be used</em>
+    ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <resource-bundle>messages.MyMessageBundle</resource-bundle>
+    <!-- Extensions defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.ddlab.rnd.setting.PublisherSetting"/>
+        <applicationConfigurable
+                id="com.example.settings"
+                displayName="GitPublisher"
+                instance="com.ddlab.rnd.setting.PublisherSettingConfig"/>
+    </extensions>
+
+    <actions>
+        <!--        <action id="codePubId" class="com.ddlab.rnd.action.CodePublishAction">-->
+        <!--            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>-->
+        <!--        </action>-->
+
+        <!--<action id="snippetId" class="com.ddlab.tornado.actions.SnippetCreateAction">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>-->
+
+        <!--        <action id="CodePublishAction"-->
+        <!--                class="com.ddlab.rnd.action.CodePublishAction"-->
+        <!--                text="Publish Code"-->
+        <!--                description="Publishes code to server"/>-->
+        <!--&lt;!&ndash;                icon="icons/publish.svg"/>&ndash;&gt;-->
+
+        <action id="CodePublishAction"
+                class="com.ddlab.rnd.action.CodePublishAction"
+                text="Publish Code"
+                description="Publishes code to server" icon="/icons/s1-16.png">
+            <!--icon="icons/publish.svg">-->
+            <!-- Add to Project View popup menu -->
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+        </action>
+
+    </actions>
+
+</idea-plugin>
