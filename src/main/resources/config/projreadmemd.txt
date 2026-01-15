@@ -22,10 +22,6 @@ To be updated later
 ## How to use?
 To be updated later
 
-## Contributor
-
-**{2}**
-
 ## License
 A free and open source project.
-MIT © [{3}]()
+MIT ©

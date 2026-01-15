@@ -5,7 +5,10 @@ import com.ddlab.rnd.handler.HostedGitType;
 import com.ddlab.rnd.handler.IGitHandler;
 import com.ddlab.rnd.setting.PublisherSetting;
 import com.ddlab.rnd.ui.CodePublishPanelComponent;
+import com.ddlab.rnd.ui.util.CommonUIUtil;
 import com.ddlab.rnd.ui.util.UIUtil;
+import com.ddlab.rnd.util.GeneratorUtil;
+import com.ddlab.rnd.util.GitUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -54,12 +57,63 @@ public class CodePublishDialog extends DialogWrapper {
 //        getGitInfo();
         close(1);
 //        new RepoExecutor(this).createRepo();
-        validate(project);
+//        validate(project);
+
+        shareYourCode();
     }
 
 
 
     // ~~~~~~~~ private methods ~~~~~~~~
+
+    private void shareYourCode() {
+        CompletableFuture<String> future = perform(project);
+        future.thenAccept(result -> {
+            ApplicationManager.getApplication().invokeLater(() -> {
+                // Perform the logic
+                if(result.equalsIgnoreCase("Success")){
+                    CommonUIUtil.showAppSuccessfulMessage("Codebase hosted successfully");
+                }
+            });
+        }).exceptionally(ex -> {
+            log.error("Exception while getting the list of repos: {}", ex);
+            ApplicationManager.getApplication().invokeLater(() ->
+                    Messages.showErrorDialog("Exception while hosting the codebase: " + ex, "Gitifier"));
+            return null;
+        });
+    }
+
+    private void shareCode() throws Exception {
+        String selectedGitType = (String) codePublishPanelComponent.getHostedGitTypeCombo().getSelectedItem();
+        UserAccount userAccount = UIUtil.getSelectedUserAccount(codePublishPanelComponent.getHostedGitTypeCombo(),
+                codePublishPanelComponent.getSlGitUserNameCombo());
+        IGitHandler gitHandler = HostedGitType.fromString(selectedGitType).getGitHandler(userAccount);
+        String repoName = project.getName();
+        String repoBaseDirPath = project.getBasePath();
+//        try {
+            boolean repoExistFlag = gitHandler.repoExists(repoName);
+            boolean gitDirAvlFlag = GitUtil.gitDirExists(repoBaseDirPath);
+            String briefRepoDesc = codePublishPanelComponent.getTextArea().getText();
+            String branchName = gitHandler.getGitType().equalsIgnoreCase("bitbucket") ? "main" : "master";
+            if(!repoExistFlag && !gitDirAvlFlag){
+                // It is a brand new repository to be hosted
+                GitUtil.createOnlineRepo(repoBaseDirPath, gitHandler, briefRepoDesc, branchName);
+            } else if(repoExistFlag && gitDirAvlFlag){
+                // Repo is available to a registed user and .git dir available
+                // update to the registered user
+            } else if(repoExistFlag && !gitDirAvlFlag) {
+                // throw the exception
+            } else if(!repoExistFlag && gitDirAvlFlag) {
+                // Repo is not available to a user, but .git dir available
+                // Read the user information and push code
+                GitUtil.createOnlineRepo(repoBaseDirPath, gitHandler, briefRepoDesc, branchName);
+            }
+//        }
+//        catch(Exception ex) {
+//            log.error("Error while sharing code: \n{}", ex);
+//            throw ex;
+//        }
+    }
 
     private void validate(Project project) {
         String selectedGitType = (String) codePublishPanelComponent.getHostedGitTypeCombo().getSelectedItem();
@@ -89,6 +143,16 @@ public class CodePublishDialog extends DialogWrapper {
         try {
             boolean checkFlag = gitHandler.repoExists(repoName);
             log.debug("checkFlag: {}", checkFlag);
+            if(checkFlag) {
+                // simply update the project to the registed user
+                // Check whether repository has valid user name and token registered to the plugin
+
+                //		if(GitUtil.gitDirExists(projDirPath)) {
+//			Map<String,String> userAndUrlMap = GitUtil.getUserAndCloneUrlMap(projDirPath);
+//			System.out.println("User Url Map: "+userAndUrlMap);
+//		}
+
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -132,26 +196,36 @@ public class CodePublishDialog extends DialogWrapper {
     }
 
     private CompletableFuture<String> perform(Project project) {
-
         CompletableFuture<String> future = new CompletableFuture<>();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Some Titile", true) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Code Sharing", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
                     indicator.setIndeterminate(true);
-                    indicator.setText("Constants.SNYK_ISSUES_PROGRESS_MSG");
-                    TimeUnit.SECONDS.sleep(10);
+                    indicator.setText("Generating files ...");
+                    String repoBasePath = project.getBasePath();
+                    File reposBaseDir = new File(repoBasePath);
+                    String projectName = project.getName();
+                    String briefRepoDesc = codePublishPanelComponent.getTextArea().getText();
+                    GeneratorUtil.createGitIgnoreFile(reposBaseDir);
+                    GeneratorUtil.createReadMeMdFile(reposBaseDir,projectName,briefRepoDesc);
+
+                    indicator.setText("Sharing code ...");
+                    shareCode();
+
+
+//                    TimeUnit.SECONDS.sleep(10);
 //                    String snykProjectIssuesJsonTxt = SnykApi.fetchSnykProjectIssuesAsJsonText(project, buildTypeName);
-                    indicator.setText("Analyzing and Consolidating Issues ...");
+//                    indicator.setText("Analyzing and Consolidating Issues ...");
 
 //                    SnykProjectIssues allProjectIssue = getAIManipulatedSnykIssues(snykProjectIssuesJsonTxt);
 //                    JTable table = SnykUiUtil.getUpdatedSnykIssueTable(allProjectIssue);
 //                    indicator.setText("Finishing all ...");
-                    TimeUnit.SECONDS.sleep(5);
-                    future.complete("Completed");
+//                    TimeUnit.SECONDS.sleep(5);
+                    future.complete("Success");
                 }
                 catch (Exception ex) {
+                    future.completeExceptionally(ex);
                     log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
 //                    CommonUIUtil.showAppErrorMessage(ex.getMessage());
                 }

@@ -7,7 +7,7 @@ public class ConfigReaderUtil {
 	private static final Properties PROPERTIES = new Properties();
 
 	static {
-		try (InputStream is = ConfigReaderUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
+		try (InputStream is = ConfigReaderUtil.class.getClassLoader().getResourceAsStream("config/config.properties")) {
 
 			if (is == null) {
 				throw new RuntimeException("config.properties not found");
