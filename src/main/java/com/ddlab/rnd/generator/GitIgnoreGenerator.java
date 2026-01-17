@@ -3,6 +3,7 @@
  */
 package com.ddlab.rnd.generator;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.nio.charset.Charset;
  *
  * @author Debadatta Mishra
  */
+@Slf4j
 public class GitIgnoreGenerator implements IGenerator {
 
     @Override
@@ -23,18 +25,15 @@ public class GitIgnoreGenerator implements IGenerator {
     }
 
     public String getGitIgnoreContents() {
-        try (InputStream inputStream =
-                     GitIgnoreGenerator.class
+        try (InputStream inputStream = GitIgnoreGenerator.class
                              .getClassLoader()
                              .getResourceAsStream("config/projgitignore.txt")) {
-
             if (inputStream == null) {
                 throw new IllegalStateException("projgitignore.txt not found in classpath");
             }
             return IOUtils.toString(inputStream, Charset.defaultCharset());
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            log.error("Exception while generating .gitIgnore Contents: \n{}", ex);
             return "";
         }
     }

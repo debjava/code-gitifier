@@ -47,22 +47,39 @@ public class BitbucketHandler implements IGitHandler {
 	}
 
 	@Override
+	public String getUrlToClone(String repositoryName) throws Exception {
+		String urlToClone = null;
+		String gitUserName = getUserName();
+		String uri = ConfigReaderUtil.getMessage("bitbucket.repo.check.api");
+		MessageFormat formatter = new MessageFormat(uri);
+		uri = formatter.format(new String[] { gitUserName, repositoryName });
+
+		HttpGet httpGet = HttpUtil.getHttpGet(uri, userAccount);
+		GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
+		urlToClone = getCloneUrl(gitResponse.getResponseText());
+//		log.debug("Bitbucket clone URL: {}", urlToClone);
+
+		return urlToClone;
+	}
+
+
+	@Override
 	public String getCloneUrlAfterRepoCreation(String repoName, String repoDescription) throws Exception {
 		String cloneUrl = null;
 		String loginUser = getUserName();
 		String jsonRepo = new BitbucketRepoInput(repoDescription).toJson();
-		log.debug("Json input: {}", jsonRepo);
+//		log.debug("Json input: {}", jsonRepo);
 		String uri = ConfigReaderUtil.getMessage("bitbucket.create.repo.api");
 		MessageFormat formatter = new MessageFormat(uri);
 		uri = formatter.format(new String[] { loginUser, repoName.toLowerCase() });
-		log.debug("Complete UrI: {}", uri);
+//		log.debug("Complete UrI: {}", uri);
 		HttpPost httpPost = HttpUtil.getHttpPost(uri, userAccount);
 		StringEntity jsonBodyRequest = new StringEntity(jsonRepo, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(jsonBodyRequest);
 		try {
 			GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpPost);
-			log.debug("Response Code: {}", gitResponse.getStatusCode());
-			log.debug("Response Text: \n{}",gitResponse.getResponseText());
+//			log.debug("Response Code: {}", gitResponse.getStatusCode());
+//			log.debug("Response Text: \n{}",gitResponse.getResponseText());
 			cloneUrl = getCloneUrl(gitResponse.getResponseText());
 		} catch (Exception e) {
 			throw e;
@@ -80,7 +97,7 @@ public class BitbucketHandler implements IGitHandler {
 		HttpGet httpGet = HttpUtil.getHttpGet(uri, userAccount);
 		try {
 			GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
-			log.debug("Git Response: {}", gitResponse);
+//			log.debug("Git Response: {}", gitResponse);
 			repoNames = getAllRepos(gitResponse.getResponseText());
 
 		} catch (Exception e) {
@@ -96,7 +113,7 @@ public class BitbucketHandler implements IGitHandler {
 		HttpGet httpGet = HttpUtil.getHttpGet(uri, userAccount);
 //		try {
 			GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
-			log.debug("Bitbucket Response Text: {}", gitResponse.getResponseText());
+//			log.debug("Bitbucket Response Text: {}", gitResponse.getResponseText());
 			if(gitResponse.getStatusCode() != 200) {
 				GitOnlineErrorResponse errResponse = getError(gitResponse);
 				throw new BadCredentialsException("Error code: "+errResponse.getStatus()+" - "+errResponse.getMessage());

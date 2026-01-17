@@ -16,4 +16,6 @@ public interface IGitHandler {
 	
 	UserAccount getUserAccount();
 
+	String getUrlToClone(String repositoryName) throws Exception;
+
 }

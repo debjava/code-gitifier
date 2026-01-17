@@ -24,8 +24,8 @@ public class UIUtil {
     public static void populateTableData(DefaultTableModel tableModel) {
         PublisherSetting setting = PublisherSetting.getInstance();
         Map<String, String> tableMap = setting.getGitInfoTableMap();
-        log.debug("Table Map from Setting --->{}", tableMap);
-        log.debug("Table Model Data Count: {}", tableMap.size());
+//        log.debug("Table Map from Setting --->{}", tableMap);
+//        log.debug("Table Model Data Count: {}", tableMap.size());
 
         if (tableMap == null || tableMap.isEmpty()) {
             populateOneRow(tableModel);
@@ -89,9 +89,9 @@ public class UIUtil {
     public static void resetToLastSavedSession(JComboBox hostedGitTypeCombo, JComboBox slGitUserNameCombo) {
         PublisherSetting setting = PublisherSetting.getInstance();
         String lastSavedGitType = setting.getLastSavedHostedGitTypeSelection();
-        log.debug("lastSavedGitType: {}", lastSavedGitType);
+//        log.debug("lastSavedGitType: {}", lastSavedGitType);
         String lastSavedUserName = setting.getLastSavedGitUserNameSelection();
-        log.debug("lastSavedUserName: {}", lastSavedUserName);
+//        log.debug("lastSavedUserName: {}", lastSavedUserName);
         if(lastSavedGitType != null ) {
             hostedGitTypeCombo.setSelectedItem(lastSavedGitType);
         }

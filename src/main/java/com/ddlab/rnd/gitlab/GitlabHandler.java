@@ -55,18 +55,18 @@ public class GitlabHandler implements IGitHandler {
 		GitLabRepo gitRepo = null;
 		repoDescription = URLEncoder.encode(repoDescription, "UTF-8");
 		repoName = URLEncoder.encode(repoName, "UTF-8");
-		String gitlabRepoCreateApi = ConfigReaderUtil.getMessage("gitlab.repo.create.api ");
+		String gitlabRepoCreateApi = ConfigReaderUtil.getMessage("gitlab.repo.create.api");
 		MessageFormat formatter = new MessageFormat(gitlabRepoCreateApi);
 		String uri = formatter
 				.format(new String[] { userAccount.getToken(), userAccount.getUserName(), repoName, repoDescription });
 		try {
 			HttpPost httpPost = new HttpPost(uri);
 			GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpPost);
-			log.debug("Git Response: {}", gitResponse);
+//			log.debug("Git Response: {}", gitResponse);
 			if (gitResponse.getStatusCode() == 200 || gitResponse.getStatusCode() == 201) {
 				ObjectMapper mapper = new ObjectMapper();
 				gitRepo = mapper.readValue(gitResponse.getResponseText(), GitLabRepo.class);
-				log.debug("Git Repo: {}", gitRepo);
+//				log.debug("Git Repo: {}", gitRepo);
 				cloneUrl = gitRepo.getCloneUrl();
 			} else if (gitResponse.getStatusCode() == 400) {
 				throw new RuntimeException("Project with the same name already exists");
@@ -83,17 +83,17 @@ public class GitlabHandler implements IGitHandler {
 		String token = userAccount.getToken();
 //		log.debug("Gitlab Token: " + token);
 		String userName = getUserName();
-		log.debug("Gitlab User Name: " + userName);
+//		log.debug("Gitlab User Name: " + userName);
 //		String userName = userAccount.getUserName();
 //		log.debug("Gitlab User Name: " + userName);
 		String gitlabGetRepoApi = ConfigReaderUtil.getMessage("gitlab.get.repos.api");
 		MessageFormat formatter = new MessageFormat(gitlabGetRepoApi);
 		String uri = formatter.format(new String[] { token, userName });
-		log.debug("What is the Gitlab URI: {}", uri);
+//		log.debug("What is the Gitlab URI: {}", uri);
 		HttpGet httpGet = new HttpGet(uri);
 		try {
 			GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
-			log.debug("Gitlab Response : " + gitResponse);
+//			log.debug("Gitlab Response : " + gitResponse);
 			gitRepos = getAllGitLabRepos(gitResponse);
 		} catch (Exception e) {
 			log.error("Exception while getting the list of repos: \n{}", e);
@@ -141,9 +141,12 @@ public class GitlabHandler implements IGitHandler {
 		String gitlabRepoExistApi = ConfigReaderUtil.getMessage("gitlab.repo.exist.api");
 		MessageFormat formatter = new MessageFormat(gitlabRepoExistApi);
 		String uri = formatter.format(new String[] { token, userName, repoName });
+//		log.debug("Gitlab username:{}", userName);
+//		log.debug("Gitlab token:{}", token);
+//		log.debug("Gitlab complete URI: {}", uri);
 		HttpGet httpGet = new HttpGet(uri);
 		GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
-		log.debug("Git response: {}", gitResponse.getResponseText());
+//		log.debug("Git response: {}", gitResponse.getResponseText());
 		if (gitResponse.getStatusCode() == 200) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			GitLabRepo[] gitLabRepo = objectMapper.readValue(gitResponse.getResponseText(), GitLabRepo[].class);
@@ -152,6 +155,23 @@ public class GitlabHandler implements IGitHandler {
 		}
 
 		return existsFlag;
+	}
+
+	@Override
+	public String getUrlToClone(String repositoryName) throws Exception {
+		String urlToClone = null;
+		String gitUserName = getUserName();
+		String gitlabRepoExistApi = ConfigReaderUtil.getMessage("gitlab.repo.exist.api");
+		MessageFormat formatter = new MessageFormat(gitlabRepoExistApi);
+		String uri = formatter.format(new String[] { userAccount.getToken(), gitUserName, repositoryName });
+		HttpGet httpGet = new HttpGet(uri);
+		GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
+//		log.debug("Git response: " + gitResponse.getResponseText());
+		ObjectMapper objectMapper = new ObjectMapper();
+		GitLabRepo[] gitLabRepo = objectMapper.readValue(gitResponse.getResponseText(), GitLabRepo[].class);
+		urlToClone = gitLabRepo[0].getCloneUrl();
+//		log.debug("Clone URL: " + urlToClone);
+		return urlToClone;
 	}
 
 	// ~~~~~~~~~~~~~~~~~~~ Private Methods ~~~~~~~~~~~~~~~~~~~

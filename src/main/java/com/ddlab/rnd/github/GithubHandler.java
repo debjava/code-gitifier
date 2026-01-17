@@ -46,6 +46,26 @@ public class GithubHandler implements IGitHandler {
 	}
 
 	@Override
+	public String getUrlToClone(String repositoryName) throws Exception {
+		String urlToClone = null;
+		String gitUserName = getUserName();
+		String uri = ConfigReaderUtil.getMessage("github.repo.check.api");
+		MessageFormat formatter = new MessageFormat(uri);
+//		String loginUser = userAccount.getUserName();
+		uri = formatter.format(new String[] { gitUserName, repositoryName});
+		HttpGet httpGet = new HttpGet(uri);
+		String encodedUser = HttpUtil.getEncodedUser(userAccount.getUserName(), userAccount.getToken());
+		httpGet.setHeader("Authorization", "Basic " + encodedUser);
+
+		GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
+		GitHubRepo gitHubRepo = getNewlyCreatedHostedRepo(gitResponse.getResponseText());
+		urlToClone = gitHubRepo.getCloneUrl();
+//		log.debug("Clone URL: {}" , urlToClone);
+
+		return urlToClone;
+	}
+
+	@Override
 	public String getCloneUrlAfterRepoCreation(String repoName, String repoDescription) throws Exception {
 		String cloneUrl = null;
 		GitHubRepo gitRepo = null;
@@ -64,7 +84,7 @@ public class GithubHandler implements IGitHandler {
 				throw new RuntimeException("Unable to create a repo...");
 			gitRepo = getNewlyCreatedHostedRepo(gitResponse.getResponseText());
 			cloneUrl = gitRepo.getCloneUrl();
-			log.debug("Git Repo Clone/Remote: " + cloneUrl);
+//			log.debug("Git Repo Clone/Remote: " + cloneUrl);
 
 		} catch (RuntimeException e) {
 			throw e;
@@ -81,7 +101,7 @@ public class GithubHandler implements IGitHandler {
 		String githubRepoApi = ConfigReaderUtil.getMessage("github.repo.api");
 		HttpGet httpGet = new HttpGet(githubRepoApi);
 		String githubUserName = getUserName();
-		log.debug("Github user name: {}", githubUserName);
+//		log.debug("Github user name: {}", githubUserName);
 //		String encodedUser = HTTPUtil.getEncodedUser(userAccount.getUserName(), userAccount.getPassword());
 		String encodedUser = HttpUtil.getEncodedUser(githubUserName, userAccount.getToken());
 //		log.debug("Github encoded user: {}", encodedUser);
@@ -109,11 +129,11 @@ public class GithubHandler implements IGitHandler {
 		String githubUserApi = ConfigReaderUtil.getMessage("github.user.api");
 		HttpGet httpGet = new HttpGet(githubUserApi);
 		String encodedUser = HttpUtil.getEncodedUser(userAccount.getUserName(), userAccount.getToken());
-		log.debug("Github user api encoded user: {}", encodedUser);
+//		log.debug("Github user api encoded user: {}", encodedUser);
 		httpGet.setHeader("Authorization", "Basic " + encodedUser);
 //		try {
 			GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
-			log.debug("Response: "+gitResponse);
+//			log.debug("Response: "+gitResponse);
 			if (gitResponse.getStatusCode() == 400 || gitResponse.getStatusCode() == 401) {
 //				log.debug("----------- Coming inside ----------------");
 				GitOnlineErrorResponse errResponse = getError(gitResponse.getResponseText());
@@ -140,8 +160,10 @@ public class GithubHandler implements IGitHandler {
 		MessageFormat formatter = new MessageFormat(uri);
 		String loginUser = getUserName();
 		uri = formatter.format(new String[] { loginUser, repoName });
+//		log.debug("Complete URI: {}", uri);
 		HttpGet httpGet = new HttpGet(uri);
 		String encodedUser = HttpUtil.getEncodedUser(userAccount.getUserName(), userAccount.getToken());
+//		log.debug("Encoded user: {}", encodedUser);
 		httpGet.setHeader("Authorization", "Basic " + encodedUser);
 		try {
 			GitOnlineResponse gitResponse = HttpUtil.getHttpGetOrPostResponse(httpGet);
@@ -151,6 +173,12 @@ public class GithubHandler implements IGitHandler {
 		}
 		return existsFlag;
 	}
+
+//	public String getCloneUrl(String repoName) throws Exception {
+//		String urlToClone = null;
+//
+//		return urlToClone;
+//	}
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~ Private methods ~~~~~~~~~~~~~~~~~~~~~~~
 

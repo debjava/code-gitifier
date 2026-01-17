@@ -30,6 +30,11 @@
                 id="com.example.settings"
                 displayName="GitPublisher"
                 instance="com.ddlab.rnd.setting.PublisherSettingConfig"/>
+
+        <notificationGroup
+                    id="ddlabs-gitifier.notifications"
+                    displayType="BALLOON"
+                    isLogByDefault="false"/>
     </extensions>
 
     <actions>

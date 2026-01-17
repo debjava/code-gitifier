@@ -16,12 +16,67 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GitUtil {
+
+    public static void updateOnlineRepo(String projDirPath,IGitHandler gitHandler, String commitMsg) throws Exception {
+        String gitUserName = gitHandler.getUserName();
+        String gitTypeUserName = gitHandler.getGitType() + "_" + gitUserName;
+        UserAccount userAct = gitHandler.getUserAccount();
+
+        if (GitUtil.gitDirExists(projDirPath)) {
+//            Map<String, String> userAndUrlMap = getUserAndCloneUrlMap(projDirPath);
+//            System.out.println("User Url Map: " + userAndUrlMap);
+
+            // Add Multi remote origin
+            // get the clone URl and add to it
+            Map<String, String> gitUserRemoteMap = getUserAndCloneUrlMap(projDirPath);
+            log.debug("Git user remote map: {}", gitUserRemoteMap);
+//            if(!gitUserRemoteMap.containsKey(gitTypeUserName)) {
+//                String remoteCloneUrl = gitUserRemoteMap.get("origin");
+//                addMultiRemoteOrigin(projDirPath, gitTypeUserName, remoteCloneUrl);
+//            }
+
+            log.debug("Git ype User Name: {}", gitTypeUserName);
+            String cloneToUrl = null;
+            if(!gitUserRemoteMap.containsKey(gitTypeUserName)) {
+                cloneToUrl = gitHandler.getUrlToClone(new File(projDirPath).getName());
+                log.debug("Git Remote clone URL: {}", cloneToUrl);
+
+//                String remoteCloneUrl = gitUserRemoteMap.get("origin");
+//                addMultiRemoteOrigin(projDirPath, gitTypeUserName, remoteCloneUrl);
+            }  else if (gitUserRemoteMap.containsKey(gitTypeUserName)) {
+                // First get clone url by Git user name
+                cloneToUrl = gitUserRemoteMap.get(gitTypeUserName);
+                if(cloneToUrl == null) {
+                    cloneToUrl = gitUserRemoteMap.get("origin");
+                }
+                log.debug("Git clone URL from local: {}", cloneToUrl);
+            }
+            log.debug("Git user final remote URL: {}", cloneToUrl);
+//            addMultiRemoteOrigin(projDirPath, gitTypeUserName, cloneToUrl);
+            addMultiRemote(projDirPath, gitTypeUserName, cloneToUrl);
+
+            // Add all files
+            addAllFiles(projDirPath);
+
+            // Commit
+            PersonIdent author = new PersonIdent(gitUserName, userAct.getUserName());
+            commit(projDirPath, author, commitMsg);
+
+            // Push
+            String userToken = userAct.getToken();
+            UsernamePasswordCredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(gitUserName,
+                    userToken);
+            multiPushRepo(projDirPath, gitTypeUserName, credentialsProvider);
+        }
+    }
 
     public static void createOnlineRepo(String projDirPath, IGitHandler gitHandler, String repoDescription, String branchName) throws Exception {
         try {
@@ -61,27 +116,29 @@ public class GitUtil {
             System.out.println("gitTypeUserName: " + gitTypeUserName);
 
             // Add Multi remote origin
-            GitUtil.addMultiRemoteOrigin(projDirPath, gitTypeUserName, remoteCloneUrl);
+//            addMultiRemoteOrigin(projDirPath, gitTypeUserName, remoteCloneUrl);
+
+            addMultiRemote(projDirPath, gitTypeUserName, remoteCloneUrl);
 //
 //			// Add all files
-            GitUtil.addAllFiles(projDirPath);
+            addAllFiles(projDirPath);
 
 //			// Commit
             PersonIdent author = new PersonIdent(gitUserName, userAct.getUserName());
-            GitUtil.commit(projDirPath, author, "first commit");
+            commit(projDirPath, author, "first commit");
 
             // Add a branch details
 //			GitUtil.addBranch(projDirPath);
 
-            GitUtil.addBranch(projDirPath, branchName);
+            addBranch(projDirPath, branchName);
 
             // Checkout main branch safely
-            GitUtil.checkoutRepo(projDirPath);
+            checkoutRepo(projDirPath);
 
             // Push
             UsernamePasswordCredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(gitUserName,
 					userAct.getToken());
-            GitUtil.multiPushRepo(projDirPath, gitTypeUserName, credentialsProvider);
+            multiPushRepo(projDirPath, gitTypeUserName, credentialsProvider);
 
             //Finally push the code
 //			GitUtil.pushRepo(projDirPath, credentialsProvider);
@@ -93,6 +150,25 @@ public class GitUtil {
 			throw ex;
         }
     }
+
+
+
+//    public static Set<String> getAllRemoteUrl(String projDirPath) {
+//
+//        Repository repository = new FileRepositoryBuilder()
+//                .setWorkTree(new File(projDirPath))
+//                .findGitDir(projDirPath)   // searches for .git
+//                .build();
+//
+//        StoredConfig config = repository.getConfig();
+//
+//        Set<String> remotes = config.getSubsections("remote");
+//        for (String remote : remotes) {
+//            String url = config.getString("remote", remote, "url");
+//            System.out.println(remote + " -> " + url);
+//            log.debug(remote + " -----> " + url);
+//        }
+//    }
 
     public static void createNewRepo() {
 
@@ -138,6 +214,63 @@ public class GitUtil {
         System.out.println("Remote origin added!");
     }
 
+    public static void addMultiRemote(String repoDir, String gitTypeUserName, String remoteUrl)
+            throws Exception {
+
+        Repository repository = new FileRepositoryBuilder()
+                .setGitDir(new File(repoDir, ".git"))
+                .build();
+        if (repository.getConfig().getSubsections("remote").contains(gitTypeUserName)) {
+            log.debug("Remote already exists");
+            // Do not add
+        } else {
+            RemoteConfig remoteConfig =
+                    new RemoteConfig(repository.getConfig(), gitTypeUserName);
+
+            remoteConfig.addURI(new URIish(remoteUrl));
+
+            // Save to .git/config
+            remoteConfig.update(repository.getConfig());
+            repository.getConfig().save();
+        }
+
+//        RemoteConfig remoteConfig =
+//                new RemoteConfig(repository.getConfig(), gitTypeUserName);
+//
+//        remoteConfig.addURI(new URIish(remoteUrl));
+//
+//        // Save to .git/config
+//        remoteConfig.update(repository.getConfig());
+//        repository.getConfig().save();
+
+        repository.close();
+
+        log.debug("Multi Remote origin added ... ");
+
+
+
+
+
+
+
+//        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+//        Repository repository = builder.setGitDir(new File(repoDir, ".git")).readEnvironment().findGitDir().build();
+//        StoredConfig config = repository.getConfig();
+//        config.setBoolean("http", null, "sslVerify", false);
+//
+//        config.setString("remote", "origin", "url", remoteUrl);
+//
+//        config.setString("remote", gitTypeUserName, "url", remoteUrl);
+////        config.setString("remote", gitTypeUserName, "fetch", "+refs/heads/*:refs/remotes/github/*");
+//
+////		config.setString("remote", "origin", "url", remoteUrl);
+////		config.setString("remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*");
+//
+//        config.save();
+//        repository.close();
+//        System.out.println("Remote origin added!");
+    }
+
     public static void addMultiRemoteOrigin(String repoDir, String gitTypeUserName, String remoteUrl)
             throws IOException {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
@@ -148,7 +281,7 @@ public class GitUtil {
         config.setString("remote", "origin", "url", remoteUrl);
 
         config.setString("remote", gitTypeUserName, "url", remoteUrl);
-        config.setString("remote", gitTypeUserName, "fetch", "+refs/heads/*:refs/remotes/github/*");
+//        config.setString("remote", gitTypeUserName, "fetch", "+refs/heads/*:refs/remotes/github/*");
 
 //		config.setString("remote", "origin", "url", remoteUrl);
 //		config.setString("remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*");
@@ -188,31 +321,40 @@ public class GitUtil {
         }
     }
 
-    public static void pushRepo(String repoDir, UsernamePasswordCredentialsProvider credentialsProvider)
-            throws IOException, GitAPIException {
-        try (Git git = Git.open(new File(repoDir))) {
-            git.push().setRemote("origin").add("main") // push local main branch
-                    .setCredentialsProvider(credentialsProvider).call();
-            System.out.println("Pushed successfully!");
-        }
-    }
+//    public static void pushRepo(String repoDir, UsernamePasswordCredentialsProvider credentialsProvider)
+//            throws IOException, GitAPIException {
+//        try (Git git = Git.open(new File(repoDir))) {
+//            git.push().setRemote("origin").add("main") // push local main branch
+//                    .setCredentialsProvider(credentialsProvider).call();
+//            System.out.println("Pushed successfully!");
+//        }
+//    }
 
     public static void multiPushRepo(String repoDir, String gitTypeUserName,
                                      UsernamePasswordCredentialsProvider credentialsProvider) throws IOException, GitAPIException {
         try (Git git = Git.open(new File(repoDir))) {
 
-            PushCommand pushCommand = git.push();
-            pushCommand.setRemote(gitTypeUserName);// remote name
-//            pushCommand.add("refs/heads/main");
-            pushCommand.add("main");
+//            PushCommand pushCommand = git.push();
+//            pushCommand.setRemote(gitTypeUserName);// remote name
+////            pushCommand.add("refs/heads/main");
+////            pushCommand.add("main");// it should be master
+//            pushCommand.add("master");
+//            pushCommand.setCredentialsProvider(credentialsProvider);
+//            pushCommand.call();
 
-            pushCommand.setCredentialsProvider(credentialsProvider);
 
-            pushCommand.call();
+//            git.push().setRemote("origin").call();
+
+//            git.push().setRemote("origin") // push local main branch .add("master")
+//					.setCredentialsProvider(credentialsProvider).call();
+
+            git.push().setRemote(gitTypeUserName)
+                    .setCredentialsProvider(credentialsProvider).call();
 
 //			git.push().setRemote("origin").add("main") // push local main branch
 //					.setCredentialsProvider(credentialsProvider).call();
-            System.out.println("Pushed successfully!");
+
+            log.debug("Pushed successfully!");
         }
     }
 
@@ -278,6 +420,30 @@ public class GitUtil {
                 repository.close();
         }
         return userCloneUrlMap;
+    }
+
+    public static Map<String,String> getAllRemoteUrl(String projDirPath) throws Exception {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        Repository repository = builder.setGitDir(new File(projDirPath, ".git")).readEnvironment().findGitDir().build();
+
+//        Repository repository = new FileRepositoryBuilder()
+//                .setWorkTree(new File(projDirPath))
+//                .findGitDir(projDirPath)   // searches for .git
+//                .build();
+
+        StoredConfig config = repository.getConfig();
+
+        Set<String> remotes = config.getSubsections("remote");
+        Map<String,String> gitUserRemoteMap = new HashMap<String, String>();
+        for (String remote : remotes) {
+            String url = config.getString("remote", remote, "url");
+            System.out.println(remote + " ----> " + url);
+//            log.debug(remote + " -----> " + url);
+            gitUserRemoteMap.put(remote, url);
+        }
+        System.out.println("Git User Map: \n"+gitUserRemoteMap);
+
+        return gitUserRemoteMap;
     }
 
     public static boolean gitDirExists(String projDirPath) {

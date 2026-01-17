@@ -3,6 +3,7 @@ package com.ddlab.rnd.util;
 import com.ddlab.rnd.generator.GitIgnoreGenerator;
 import com.ddlab.rnd.generator.IGenerator;
 import com.ddlab.rnd.generator.ReadMeGenerator;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 public class GeneratorUtil {
 
     public static void createGitIgnoreFile(File file) {
@@ -20,8 +22,8 @@ public class GeneratorUtil {
             if (Files.exists(gitIgnorePath))
                 return;
             Files.write(gitIgnorePath, contents.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            log.error("Exception while writing .gitignore Contents: \n{}", ex);
         }
     }
 
@@ -34,8 +36,8 @@ public class GeneratorUtil {
             if (Files.exists(readMePath))
                 return;
             Files.write(readMePath, readMeContents.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            log.error("Exception while writing ReadMe Contents: \n{}", ex);
         }
     }
 }
