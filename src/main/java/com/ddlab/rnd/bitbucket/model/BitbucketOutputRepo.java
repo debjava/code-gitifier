@@ -38,13 +38,11 @@ public class BitbucketOutputRepo {
 	@Setter
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class BitbucketClone {
-
 		@JsonProperty("name")
 		private String type;
 
 		@JsonProperty("href")
 		private String cloneUrl;
-
 	}
 
 }

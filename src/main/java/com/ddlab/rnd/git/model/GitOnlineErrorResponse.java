@@ -13,5 +13,4 @@ public class GitOnlineErrorResponse {
 	
 	private String status;
 	private String message;
-
 }

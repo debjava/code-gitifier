@@ -3,7 +3,6 @@ package com.ddlab.rnd.ui;
 import com.ddlab.rnd.constants.MessageBundle;
 import com.ddlab.rnd.git.model.UserAccount;
 import com.ddlab.rnd.services.TestButtonServiceImpl;
-import com.ddlab.rnd.setting.PublisherSetting;
 import com.ddlab.rnd.ui.util.UIUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.Messages;
@@ -81,7 +80,6 @@ public class CodePublishPanelComponent {
 
     private void createdHostedGitTypeCombo() {
         hostedGitTypeCombo = new JComboBox();
-//        hostedGitTypeCombo.setModel(new DefaultComboBoxModel(new String[]{"Github (github.com)", "Gitlab (gitlab.com)"}));
         GridBagConstraints gbc_hostedGitTypeCombo = new GridBagConstraints();
         gbc_hostedGitTypeCombo.gridwidth = 9;
         gbc_hostedGitTypeCombo.insets = new Insets(0, 0, 5, 5);
@@ -102,7 +100,6 @@ public class CodePublishPanelComponent {
 
     private void createSelectedGitUserNameCombo() {
         slGitUserNameCombo = new JComboBox();
-//        slGitUserNameCombo.setModel(new DefaultComboBoxModel(new String[]{"ramahari.pradhan2github.com", "sahu_tufani@github.com", "sonalika.chaturbedi@github.com"}));
         GridBagConstraints gbc_slGitUserNameCombo = new GridBagConstraints();
         gbc_slGitUserNameCombo.gridwidth = 9;
         gbc_slGitUserNameCombo.insets = new Insets(0, 0, 5, 5);
@@ -123,7 +120,6 @@ public class CodePublishPanelComponent {
 
     private void createAvlRepoCombo() {
         avlRepoCombo = new JComboBox();
-//        avlRepoCombo.setModel(new DefaultComboBoxModel(new String[]{"Sample1", "Sample2", "Sample 3"}));
         avlRepoCombo.setPreferredSize(new Dimension(200, avlRepoCombo.getPreferredSize().height));
 
         GridBagConstraints gbc_avlRepoCombo = new GridBagConstraints();
@@ -147,12 +143,8 @@ public class CodePublishPanelComponent {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedGitType = hostedGitTypeCombo.getSelectedItem().toString();
-//                UserAccount userAccount = getUserAccount(selectedGitType);
                 UserAccount userAccount = UIUtil.getSelectedUserAccount(hostedGitTypeCombo, slGitUserNameCombo);
                 fillupAvailableRepoCombo(selectedGitType, userAccount);
-
-//                getHostedGitTypeCombo(); hostedGitTypeCombo
-//                        getSlGitUserNameCombo() slGitUserNameCombo
                 UIUtil.saveLastSessionSetting(hostedGitTypeCombo,slGitUserNameCombo);
             }
         });
@@ -163,7 +155,6 @@ public class CodePublishPanelComponent {
         future.thenAccept(result -> {
             ApplicationManager.getApplication().invokeLater(() -> {
                 for(String value : result) {
-//                    log.debug("Git Repo Value: "+value);
                     avlRepoCombo.addItem(value);
                 }
             });
@@ -175,23 +166,12 @@ public class CodePublishPanelComponent {
         });
     }
 
-//    private UserAccount getUserAccount(String selectedGitType) {
-//        String selectedGitUserName = slGitUserNameCombo.getSelectedItem().toString();
-//        String gitNUser = selectedGitType+"~"+selectedGitUserName;
-//        PublisherSetting setting = PublisherSetting.getInstance();
-//        Map<String, String> tableInfoMap = setting.getGitInfoTableMap();
-//        String gitToken = tableInfoMap.get(gitNUser);
-//        UserAccount userAccount = new UserAccount(selectedGitUserName, gitToken);
-//        return userAccount;
-//    }
-
     private void createScrollPaneTextArea() {
         JScrollPane txtScrollPane = new JScrollPane();
         txtScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         txtScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         String shortDesc = MessageBundle.message("short.desc");
-//        txtScrollPane.setBorder(BorderFactory.createTitledBorder("Provide short description for your repository"));
         txtScrollPane.setBorder(BorderFactory.createTitledBorder(shortDesc));
         GridBagConstraints gbc_txtScrollPane = new GridBagConstraints();
         gbc_txtScrollPane.gridwidth = 3;

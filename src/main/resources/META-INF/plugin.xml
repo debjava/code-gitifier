@@ -27,8 +27,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.ddlab.rnd.setting.PublisherSetting"/>
         <applicationConfigurable
-                id="com.example.settings"
-                displayName="GitPublisher"
+                id="com.ddlab.rnd.gitifier.settings"
+                displayName="Gitifier"
                 instance="com.ddlab.rnd.setting.PublisherSettingConfig"/>
 
         <notificationGroup
@@ -55,8 +55,8 @@
 
         <action id="CodePublishAction"
                 class="com.ddlab.rnd.action.CodePublishAction"
-                text="Publish Code"
-                description="Publishes code to server" icon="/icons/s1-16.png">
+                text="Share Code"
+                description="Share code to hosted git server" icon="/icons/share_1_16.png">
             <!--icon="icons/publish.svg">-->
             <!-- Add to Project View popup menu -->
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>

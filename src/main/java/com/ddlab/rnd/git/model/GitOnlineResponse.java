@@ -9,7 +9,6 @@ import lombok.ToString;
 public class GitOnlineResponse {
 	
 	private int statusCode;
-
 	private String responseText;
 
 }

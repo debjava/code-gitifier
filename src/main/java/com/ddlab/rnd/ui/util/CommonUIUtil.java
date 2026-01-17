@@ -22,7 +22,7 @@ public class CommonUIUtil {
                 Messages.showErrorDialog(message, "Gitifier"));
     }
 
-    public static void info(Project project, String message) {
+    public static void notifyInfo(Project project, String message) {
         NotificationGroupManager.getInstance()
                 .getNotificationGroup(GROUP_ID)
                 .createNotification(TITLE, message, NotificationType.INFORMATION)

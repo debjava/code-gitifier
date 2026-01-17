@@ -1,9 +1,5 @@
 package com.ddlab.rnd.services;
 
-//import com.ddlab.gitpusher.core.GitType;
-//import com.ddlab.gitpusher.core.IGitPusher;
-//import com.ddlab.gitpusher.core.UserAccount;
-//import com.ddlab.rnd.git.model.UserAccount;
 import com.ddlab.rnd.git.model.UserAccount;
 import com.ddlab.rnd.handler.HostedGitType;
 //import com.ddlab.rnd.handler.IGitHandler;
@@ -42,7 +38,6 @@ public class TestButtonServiceImpl {
                     ApplicationManager.getApplication().invokeLater(() ->
                             Messages.showErrorDialog("Exception while getting the list of repos: "+re,"Publisher"));
                 }
-
             }
         });
         return future;
@@ -51,8 +46,6 @@ public class TestButtonServiceImpl {
     public static Map<String, List<String>> getGitAndUserNamesMap() {
         PublisherSetting setting = PublisherSetting.getInstance();
         Map<String,String> tableInfoMap = setting.getGitInfoTableMap();
-//        log.debug("tableInfoMap: {}", tableInfoMap);
-
         Map<String, List<String>> gitAndUserNamesMap = new LinkedHashMap<>();
         tableInfoMap.forEach((key,value) -> {
             String[] keys = key.split("~");

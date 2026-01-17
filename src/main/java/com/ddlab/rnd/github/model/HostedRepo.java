@@ -10,16 +10,16 @@ import tools.jackson.databind.ObjectMapper;
 @AllArgsConstructor
 public class HostedRepo {
 
-	@JsonProperty("name")
-	private String name;
+    @JsonProperty("name")
+    private String name;
 
-	@JsonProperty("description")
-	private String shortDescription;
+    @JsonProperty("description")
+    private String shortDescription;
 
-	public String toJson() {
-		ObjectMapper mapper = new ObjectMapper();
-		String toJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-		return toJson;
-	}
+    public String toJson() {
+        ObjectMapper mapper = new ObjectMapper();
+        String toJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        return toJson;
+    }
 
 }

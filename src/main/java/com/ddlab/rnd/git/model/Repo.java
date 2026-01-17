@@ -16,19 +16,12 @@ import lombok.ToString;
 @NoArgsConstructor @AllArgsConstructor
 public class Repo {
 
-	/** The name. */
 	@JsonProperty("name")
 	private String name;
 
-	/** The clone url. */
 	@JsonProperty("clone_url")
 	private String cloneUrl;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -39,11 +32,6 @@ public class Repo {
 		return Objects.equals(name, repo.name) && Objects.equals(cloneUrl, repo.cloneUrl);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(name, cloneUrl);
