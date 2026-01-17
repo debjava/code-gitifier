@@ -66,7 +66,10 @@ public class UIUtil {
             String userNameField = String.valueOf(model.getValueAt(row, 1));
             String tokenField = String.valueOf(model.getValueAt(row, 2));
 
-            gitInfoTableMap.put(selectionGitItem + "~" + userNameField, tokenField);
+            if(userNameField != null && !userNameField.isEmpty() && tokenField != null && !tokenField.isEmpty()) {
+                gitInfoTableMap.put(selectionGitItem + "~" + userNameField, tokenField);
+            }
+//            gitInfoTableMap.put(selectionGitItem + "~" + userNameField, tokenField);
         }
         setting.setGitInfoTableMap(gitInfoTableMap);
     }

@@ -129,6 +129,7 @@ public class GitPanelComponent {
 
     private void addRowButton() {
         JButton addRowBtn = new JButton("");//new JButton("Add");
+        addRowBtn.setToolTipText("Click to add new row to input Hosted git username and token");
         addRowBtn.setIcon(new ImageIcon(getClass().getResource("/icons/add_1_24.png")));
         GridBagConstraints gbc_addRowBtn = new GridBagConstraints();
         gbc_addRowBtn.insets = new Insets(0, 0, 5, 0);
